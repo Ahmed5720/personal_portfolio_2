@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import type { MenuLayout } from '../cameraConstants';
+import { publicAssetUrl } from '../publicAssetUrl';
 import { initCameras } from '../webgpu/cameras/initCameras';
 
-const DEFAULT_MODEL_URL = '/assets/models/roomyff.obj';
+const DEFAULT_MODEL_URL = publicAssetUrl('assets/models/roomyff.obj');
 
 interface CamerasCanvasProps {
   modelUrl?: string;

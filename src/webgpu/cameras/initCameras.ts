@@ -19,9 +19,10 @@ import {
 import { serializedToOrientation } from './cameraOrientation';
 import { HARDCODED_SCENE_CONFIG } from '../../cameraOrientations';
 import { DEFAULT_MENU_LAYOUT, SCENE_CLEAR_COLOR } from '../../cameraConstants';
+import { publicAssetUrl } from '../../publicAssetUrl';
 import { quitIfWebGPUNotAvailableOrMissingFeatures } from '../util';
 
-const DEFAULT_MODEL_URL = '/assets/models/romyf.obj';
+const DEFAULT_MODEL_URL = publicAssetUrl('assets/models/roomyff.obj');
 const GROUP_UNIFORM_SIZE = 160;
 const FAN_ROTATION_SPEED = 1.5;
 const ALPHA_CUTOFF = 0.5;

@@ -1,3 +1,4 @@
+import { publicAssetUrl } from '../../publicAssetUrl';
 import { loadMtl, resolveDiffuseTextureUrl } from './loadMtl';
 import type { MtlMaterial } from './loadMtl';
 import { floatsPerVertex } from './vertexLayout';
@@ -64,7 +65,7 @@ async function loadMaterialsForObj(
   if (!objUrl.startsWith('blob:')) {
     mtlUrls.add(resolveSiblingAssetUrl(objUrl, mtllib));
   }
-  mtlUrls.add(`/assets/models/${mtllib}`);
+  mtlUrls.add(publicAssetUrl(`assets/models/${mtllib}`));
 
   let lastError: unknown;
   for (const mtlUrl of mtlUrls) {

@@ -1,3 +1,5 @@
+import { publicAssetUrl } from '../../publicAssetUrl';
+
 export interface MtlMaterial {
   name: string;
   diffuseMap: string | null;
@@ -85,5 +87,5 @@ function parseMapKd(tokens: string[]): string {
 export function resolveDiffuseTextureUrl(mapKd: string): string {
   const normalized = mapKd.trim().replace(/^["']|["']$/g, '').replace(/\\/g, '/');
   const filename = (normalized.split('/').pop() ?? normalized).replace(/["']/g, '');
-  return `/assets/img/${filename}`;
+  return publicAssetUrl(`assets/img/${filename}`);
 }
