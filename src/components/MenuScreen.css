@@ -1,0 +1,98 @@
+.menu-screen {
+  width: 100%;
+  height: 100%;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  font-family: 'Courier New', Courier, 'Lucida Console', monospace;
+  color: #ff851b;
+  background: #080b19;
+  text-shadow: 0 0 6px rgba(230, 194, 0, 0.45);
+}
+
+.menu-screen__terminal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  height: 100%;
+}
+
+.menu-screen__line {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.menu-screen__line--system {
+  border-bottom: 1px solid rgba(230, 194, 0, 0.35);
+  padding-bottom: 0.5rem;
+}
+
+.menu-screen__line--footer {
+  margin-top: auto;
+  opacity: 0.75;
+  font-size: 0.7rem;
+}
+
+.menu-screen__line--blink {
+  animation: terminal-blink 1.1s step-end infinite;
+}
+
+.menu-screen__prompt {
+  color: #ff851b;
+}
+
+.menu-screen__nav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.menu-screen__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.menu-screen__button {
+  width: 100%;
+  padding: 0.55rem 0.25rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #ff851b;
+  font: inherit;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-shadow: 0 0 6px rgba(230, 194, 0, 0.45);
+  transition: background 0.15s, color 0.15s;
+}
+
+.menu-screen__button:hover,
+.menu-screen__button:focus-visible {
+  background: rgba(230, 194, 0, 0.12);
+  color: #ff851b;
+  outline: none;
+}
+
+.menu-screen__button--fullscreen {
+  margin-top: auto;
+  border-top: 1px solid rgba(230, 194, 0, 0.2);
+  padding-top: 0.75rem;
+  font-size: 0.75rem;
+}
+
+@keyframes terminal-blink {
+  50% {
+    opacity: 0.35;
+  }
+}

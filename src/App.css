@@ -1,0 +1,40 @@
+.viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.menu-panel {
+  position: absolute;
+  z-index: 2;
+  max-width: min(100vw - 2rem, 900px);
+  max-height: min(100vh - 2rem, 900px);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.menu-panel--fullscreen {
+  left: 50% !important;
+  top: 50% !important;
+  width: min(560px, 92vw) !important;
+  height: min(520px, calc(100vh - 4.5rem)) !important;
+  max-width: none;
+  max-height: none;
+  z-index: 20;
+}
+
+.menu-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.12) 0,
+    rgba(0, 0, 0, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.35;
+}

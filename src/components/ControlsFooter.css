@@ -1,0 +1,30 @@
+.controls-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  padding: 0.65rem 1rem;
+  background: rgba(8, 11, 25, 0.82);
+  border-top: 1px solid rgba(255, 133, 27, 0.25);
+  pointer-events: none;
+}
+
+.controls-footer__text {
+  margin: 0;
+  text-align: center;
+  font-family: 'Courier New', Courier, 'Lucida Console', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 133, 27, 0.85);
+}
+
+.controls-footer kbd {
+  display: inline-block;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid rgba(255, 133, 27, 0.4);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 0.65rem;
+}

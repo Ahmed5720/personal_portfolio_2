@@ -1,0 +1,332 @@
+# Blender 4.4.3 MTL File: 'romeysimple.blend'
+# www.blender.org
+
+newmtl 06___Default
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/mouse.png
+
+newmtl 08_-_Default
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/keyboard.png
+
+newmtl 09_-_Default
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/computer.png
+
+newmtl Aluminum
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/defaultAlum.png
+
+newmtl Brick_Wall_01_Material
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/Brick_Wall_01_basecolor.jpg
+
+newmtl Bronce
+Ka 1.000000 1.000000 1.000000
+Ks 0.800000 0.800000 0.800000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/new/bronco_texturescom.png
+
+newmtl Bronce__shit
+Ka 1.000000 1.000000 1.000000
+Ks 0.495455 0.495455 0.495455
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/TexturesCom_Metal_BronzeBare_1K_albedo.png
+
+newmtl Cork
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/new/cork.jpg
+
+newmtl Material.003
+Ka 1.000000 1.000000 1.000000
+Ks 0.172727 0.172727 0.172727
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/new/texturescomfan.png
+
+
+newmtl Material.012
+Ns 4.892750
+Ka 1.000000 1.000000 1.000000
+Kd 0.800023 0.000558 0.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl Metal
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd C:/Metal_basecolor.jpg
+
+
+newmtl Wood_Floor_Dark_Walnut
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/wood-83_diffuse.jpg
+
+newmtl Yellow_plaster_stucco_wall
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/wall.png
+
+newmtl a1
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a1.png
+
+newmtl a2
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a2.png
+
+newmtl a3
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a3.png
+
+newmtl a4
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a4.png
+
+newmtl a5
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a5.png
+
+newmtl a6
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a6.png
+
+newmtl a7
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a7.png
+
+newmtl a8
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/a8.png
+
+newmtl carpet.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/carpet.png
+
+newmtl desk
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/desk.png 
+newmtl ground
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.015531 0.005786 0.002869
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl lamp_glass
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl lamp_greenplastic
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/lamp_plastic.png
+
+newmtl lamp_light
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 3.300000 3.300000 3.300000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl lamp_reflector
+Ns 490.000000
+Ka 0.800000 0.800000 0.800000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl lamp_wood
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/lamp_wood.png
+
+newmtl leaves
+Ns 477.355347
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/leaves.png
+map_d C:/Dev/WEBNew/portfolio_new/public/assets/img/leaves.png
+
+newmtl plastic
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl pot_concrete
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/new/concrete_pot.jpg
+
+newmtl screen
+Ns 843.057739
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Dev/WEBNew/portfolio_new/public/assets/img/screen2.png
