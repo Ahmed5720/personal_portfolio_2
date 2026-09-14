@@ -1,13 +1,567 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>portfolio_new</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ahmed yassin</title>
+
+<!--
+  ============================================================
+  HOW TO PLUG YOUR OWN WORK IN
+  ============================================================
+  1. Put your clips in  ./media/  and your poster stills in  ./media/posters/
+  2. For each of the five <a class="card"> blocks below, edit:
+       - href            -> the project's own page
+       - <source src>    -> your .mp4
+       - poster          -> a still frame (first frame is fine)
+       - the <h2> title and the <p> one-liner
+  3. Delete any card you don't need; the grid rules are keyed to
+     .card--lead (big) and .card--rest (smaller), not to child count.
+
+  ENCODING RECIPE (ffmpeg). Screen recording -> web loop:
+
+    ffmpeg -i raw.mov \
+      -an \
+      -vf "scale=1280:-2:flags=lanczos,fps=30" \
+      -c:v libx264 -profile:v main -pix_fmt yuv420p \
+      -crf 24 -preset slow \
+      -movflags +faststart \
+      out.mp4
+
+    -an                 strip audio entirely (smaller, and avoids
+                        autoplay heuristics treating it as "media with sound")
+    scale=1280:-2       cap width at 1280; -2 keeps aspect ratio and forces
+                        an even height, which H.264 requires
+    -pix_fmt yuv420p    Safari refuses to decode yuv444p. Non-negotiable.
+    -profile:v main     broad hardware-decoder support
+    -crf 24             quality knob: lower = better + bigger. Try 20-28.
+    +faststart          moves the index to the front of the file so playback
+                        can begin before the whole file has downloaded
+
+  Grab a poster still from one frame:
+
+    ffmpeg -i out.mp4 -vf "select=eq(n\,0)" -vframes 1 -q:v 3 poster.jpg
+
+  Aim for under ~1 MB per clip and 4-8 seconds. A loop that's short and
+  seamless reads better than a long one that cuts abruptly.
+  ============================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Karla:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* Grey ladder: page sits darkest, frames lift slightly off it,
+       hairlines lift again. Never #000 — see the halation note. */
+    --bg:       #26282b;
+    --surface:  #2f3236;
+    --line:     #41454a;
+
+    /* Slightly warm off-white reads more comfortably on cool grey than #fff */
+    --ink:      #eae7e2;
+    --muted:    #a0a3a7;
+
+    --measure:  1240px;
+    --gap:      clamp(20px, 2.6vw, 40px);
+  }
+
+  /* Tells the browser to render scrollbars, text fields etc. in dark mode
+     instead of flashing white chrome at the edges of your dark page. */
+  html { color-scheme: dark; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Karla", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell {
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: clamp(28px, 6vw, 72px) clamp(20px, 5vw, 56px) clamp(48px, 8vw, 96px);
+  }
+
+
+/* ---------- top-right drawer: full-height side panel ---------- */
+
+.drawer {
+  position: fixed;
+  inset: 0 0 0 auto;              /* pin to the right edge, full height */
+  z-index: 10;
+  pointer-events: none;           /* panel is inert until shown */
+}
+
+/* --- the tab: stays put in the top-right corner --- */
+
+.drawer__tab {
+  position: absolute;
+  top: clamp(20px, 5vw, 56px);
+  right: clamp(20px, 5vw, 56px);
+  z-index: 2;                     /* above the panel */
+  pointer-events: auto;
+
+  appearance: none;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 8px 16px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  font-size: 0.9rem;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.drawer__tab:hover,
+.drawer__tab:focus-visible {
+  border-color: #6d7177;
+  background: #34383c;
+}
+.drawer__tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* --- the panel: full height, 1/3 viewport wide, slides in from the right --- */
+
+.drawer__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 33.333vw;
+  min-width: 260px;               /* don't get silly-thin on phones */
+  max-width: 520px;               /* don't get silly-wide on 4K */
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  pointer-events: auto;
+
+  /* Hidden: pushed fully off to the right. */
+  transform: translateX(100%);
+  transition: transform 380ms cubic-bezier(.2,.7,.3,1);
+
+  /* Keep the tab from sitting on top of panel content */
+  padding-top: clamp(84px, 12vh, 140px);
+  padding-inline: clamp(28px, 4vw, 56px);
+  box-sizing: border-box;
+}
+
+.drawer:hover .drawer__panel,
+.drawer:focus-within .drawer__panel,
+.drawer.is-open .drawer__panel {
+  transform: translateX(0);
+}
+
+/* The list of links, stacked. */
+.drawer__panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;         /* ← stacked, not horizontal */
+}
+
+.drawer__panel li + li {
+  border-top: 1px solid var(--line);
+}
+
+.drawer__panel a {
+  display: block;
+  padding: 20px 0;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: "Fraunces", Georgia, serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  letter-spacing: -0.01em;
+  transition: color 200ms ease, padding-left 220ms ease;
+}
+
+.drawer__panel a:hover,
+.drawer__panel a:focus-visible {
+  color: #fff;
+  padding-left: 12px;             /* small slide-right on hover */
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer__panel,
+  .drawer__panel a { transition-duration: 0.01ms !important; }
+}
+
+
+  /* ---------- header: deliberately small, the work is the hero ---------- */
+
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 28px;
+    padding-bottom: clamp(26px, 4vw, 44px);
+    margin-bottom: clamp(30px, 5vw, 56px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .masthead h1 {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  .masthead p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.975rem;
+    flex: 1 1 32ch;            /* grow to fill, wrap around ~32ch min */
+    max-width: none;
+  }
+
+  /* ---------- the grid ----------
+     6 columns. Top two cards span 3 (half width each), bottom three span 2
+     (a third each). minmax(0, 1fr) rather than 1fr because grid tracks
+     otherwise refuse to shrink below their content's intrinsic width, and
+     a video's intrinsic width is its pixel width — which would overflow. */
+
+  .work {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .card--lead { grid-column: span 3; }
+  .card--rest { grid-column: span 2; }
+
+  @media (max-width: 900px) {
+    .card--lead, .card--rest { grid-column: span 3; }   /* two up */
+  }
+  @media (max-width: 600px) {
+    .card--lead, .card--rest { grid-column: span 6; }   /* one up */
+  }
+
+  /* ---------- a card ---------- */
+
+  .card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .frame {
+    position: relative;
+    aspect-ratio: 16 / 10;      /* reserves height before metadata loads */
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+
+  .setup {
+  margin-top: clamp(48px, 8vw, 96px);
+  border-top: 1px solid var(--line);   /* matches the contact strip's rule */
+  padding-top: 22px;
+}
+
+.setup img {
+  display: block;
+  width: 100%;
+  height: auto;                        /* preserve 2:1 ratio */
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+/* Optional: a caption that sits under the image */
+.setup figcaption {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+  /* Visible when a clip is missing or still loading, so an empty frame
+     looks considered rather than broken. The video covers it once ready. */
+  .frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.25;
+  }
+
+  .frame video {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;          /* fill the frame, crop the overflow */
+    /* Held back slightly at rest so five moving clips don't all shout at
+       once; returns to full on hover/focus. */
+    filter: brightness(0.86) saturate(0.94);
+    transition: filter 400ms ease;
+  }
+
+  .card:hover .frame video,
+  .card:focus-visible .frame video { filter: none; }
+
+  .card:hover .frame,
+  .card:focus-visible .frame { border-color: #6d7177; }
+
+  /* Keyboard focus must be obvious — the whole card is the link. */
+  .card:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 6px;
+    border-radius: 4px;
+  }
+
+  .label { padding-top: 14px; }
+
+  .label h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0 0 4px;
+    /* Lead cards get a larger title than the smaller three. */
+    font-size: 1.12rem;
+  }
+  .card--lead .label h2 { font-size: 1.32rem; }
+
+  .card:hover .label h2,
+  .card:focus-visible .label h2 { text-decoration: underline; text-underline-offset: 3px; }
+
+  .label p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    max-width: 44ch;
+  }
+
+  /* ---------- footer ---------- */
+
+  .contact {
+    margin-top: clamp(48px, 8vw, 96px);
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 26px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .contact a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .contact a:hover, .contact a:focus-visible { border-bottom-color: var(--ink); }
+
+  /* Readers who ask their OS to reduce motion get stills, not five loops. */
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+
+ <nav class="drawer" aria-label="Secondary">
+  <button class="drawer__tab" type="button" aria-expanded="false" aria-controls="drawer-panel">
+    Menu
+  </button>
+  <div class="drawer__panel" id="drawer-panel">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/media/">Media</a></li>
+      <li><a href="https://www.artstation.com/ahmedyassin572" target="_blank" rel="noopener">Artstation</a></li>
+    </ul>
+  </div>
+</nav>
+
+
+<div class="shell">
+
+  <header class="masthead">
+    <h1>Hi</h1>
+    <p>this is Ahmed, as a kid I have played plenty of video games on a really old pc, if I am not mistaken it had a pentium 4 and 512mb of ddr2 ram with some ati graphics card with 32mb of vram, but that's beside the point. The point is it was a mericle that that thing could run anything made 
+      after 2010 which is around the time I had used it, and certainly not something as complex as a videogame tldr; I loved graphics, I loved them because they pushed the hardware, 
+      and I always wanted to know exactly how things are built from the grounds up (or atleast close enough to that) which is why I took two years to figure out whether I wanted to be an electrical engineer or a computer scientist. The electrical engineer starts from first principles
+    , where as the computer scientist abstracts more but can therefore do more complex things, I chose the easier way anyway.. too bad. Anyway graphics be it as beautiful as they are, are not the only thing that interested me. I love all that sits at the intersection between hardware and software, above all I love performance. Modern hardware is very strong
+      And my opinion is that engineering is about solving problems albeit in efficient ways. This is what I love to do, be it in graphics, Machine learning, or other areas. Here's a book that I love: Operating systems: Three easy pieces. Here's another completely unrelated book that I love: East of Eden. Here's an author I love: John Green. Here's a software I love: Blender, Here's something I love to do 3D art (checkout my artstation). Anyway that's enough of a ramble. Thanks for coming to my Ted Talk.
+    </p>
+  </header>
+
+  <ul class="work">
+
+    <li class="card--lead">
+      <a class="card" href="https://ahmed5720.github.io/RenderBoy/">
+        <div class="frame">
+          <video
+            src="media/renderboy.mp4"
+            poster="media/posters/project-one.jpg"
+            autoplay muted loop playsinline
+            preload="metadata"
+            aria-hidden="true" tabindex="-1"></video>
+        </div>
+        <div class="label">
+          <h2>Renderboy</h2>
+          <p>ss.</p>
+        </div>
+      </a>
+    </li>
+
+    <li class="card--lead">
+      <a class="card" href="https://github.com/Ahmed5720/CuBoids">
+        <div class="frame">
+          <video
+            src="media/boids.mp4"
+            poster="media/posters/project-two.jpg"
+            autoplay muted loop playsinline
+            preload="metadata"
+            aria-hidden="true" tabindex="-1"></video>
+        </div>
+        <div class="label">
+          <h2>Boids</h2>
+          <p>bsbs.</p>
+        </div>
+      </a>
+    </li>
+
+    <li class="card--rest">
+      <a class="card" href="https://github.com/Ahmed5720/CuBoids">
+        <div class="frame">
+          <video
+            src="media/sph.mp4"
+            poster="media/posters/project-three.jpg"
+            autoplay muted loop playsinline
+            preload="metadata"
+            aria-hidden="true" tabindex="-1"></video>
+        </div>
+        <div class="label">
+          <h2>Smoothed Particle Hydrodynamics</h2>
+          <p>dpsdps.</p>
+        </div>
+      </a>
+    </li>
+
+    <li class="card--rest">
+      <a class="card" href="https://github.com/Ahmed5720/PROJECT_NGINE">
+        <div class="frame">
+          <video
+            src="media/ngine2x.mp4"
+            poster="media/posters/project-four.jpg"
+            autoplay muted loop playsinline
+            preload="metadata"
+            aria-hidden="true" tabindex="-1"></video>
+        </div>
+        <div class="label">
+          <h2>Project Ngine</h2>
+          <p>fdps</p>
+        </div>
+      </a>
+    </li>
+
+    <li class="card--rest">
+      <a class="card" href="https://github.com/Ahmed5720/Manifold">
+        <div class="frame">
+          <video
+            src="media/manifold4x.mp4"
+            poster="media/posters/project-five.jpg"
+            autoplay muted loop playsinline
+            preload="metadata"
+            aria-hidden="true" tabindex="-1"></video>
+        </div>
+        <div class="label">
+          <h2>Manifold</h2>
+          <p>dp.</p>
+        </div>
+      </a>
+    </li>
+
+  </ul>
+
+  
+
+  <figure class="setup">
+  <img
+    src="media/setup.jpeg"
+    alt="My desk setup: ..."
+    width="4000"
+    height="2000"
+    loading="lazy"
+    decoding="async">
+  <figcaption>POV.</figcaption>
+</figure>
+
+
+<footer class="contact">
+    <span>Rochester, NY</span>
+    <a href="mailto:you@example.com">ahmednassar5720@gmail.com</a>
+    <a href="https://github.com/Ahmed5720">GitHub</a>
+
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var videos = Array.prototype.slice.call(document.querySelectorAll('.frame video'));
+  if (!videos.length) return;
+
+  // If the OS asks for reduced motion, don't run five loops at someone.
+  // Poster stills stay visible and nothing plays.
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (calm.matches) {
+    videos.forEach(function (v) { v.autoplay = false; v.pause(); });
+    return;
+  }
+
+  // Belt and braces: the muted *attribute* is what unlocks autoplay, but
+  // setting the property too protects against frameworks stripping it.
+  videos.forEach(function (v) { v.muted = true; });
+
+  function attempt(v) {
+    var p = v.play();
+    // play() returns a promise that rejects if the browser declines.
+    // Swallow it — an unhandled rejection in the console is noise, and the
+    // poster frame is an acceptable fallback.
+    if (p && typeof p.catch === 'function') p.catch(function () {});
+  }
+
+  // Only decode what's on screen. Offscreen clips cost nothing, which is
+  // what makes five simultaneous loops safe on a phone.
+  if ('IntersectionObserver' in window) {
+    var watcher = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var v = entry.target;
+        if (entry.isIntersecting) attempt(v);
+        else v.pause();
+      });
+    }, { threshold: 0.2 });
+
+    videos.forEach(function (v) { watcher.observe(v); });
+  } else {
+    videos.forEach(attempt);   // very old browser: just let them all run
+  }
+})();
+</script>
+
+</body>
 </html>
