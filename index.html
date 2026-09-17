@@ -5,47 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ahmed yassin</title>
 
-<!--
-  ============================================================
-  HOW TO PLUG YOUR OWN WORK IN
-  ============================================================
-  1. Put your clips in  ./media/  and your poster stills in  ./media/posters/
-  2. For each of the five <a class="card"> blocks below, edit:
-       - href            -> the project's own page
-       - <source src>    -> your .mp4
-       - poster          -> a still frame (first frame is fine)
-       - the <h2> title and the <p> one-liner
-  3. Delete any card you don't need; the grid rules are keyed to
-     .card--lead (big) and .card--rest (smaller), not to child count.
-
-  ENCODING RECIPE (ffmpeg). Screen recording -> web loop:
-
-    ffmpeg -i raw.mov \
-      -an \
-      -vf "scale=1280:-2:flags=lanczos,fps=30" \
-      -c:v libx264 -profile:v main -pix_fmt yuv420p \
-      -crf 24 -preset slow \
-      -movflags +faststart \
-      out.mp4
-
-    -an                 strip audio entirely (smaller, and avoids
-                        autoplay heuristics treating it as "media with sound")
-    scale=1280:-2       cap width at 1280; -2 keeps aspect ratio and forces
-                        an even height, which H.264 requires
-    -pix_fmt yuv420p    Safari refuses to decode yuv444p. Non-negotiable.
-    -profile:v main     broad hardware-decoder support
-    -crf 24             quality knob: lower = better + bigger. Try 20-28.
-    +faststart          moves the index to the front of the file so playback
-                        can begin before the whole file has downloaded
-
-  Grab a poster still from one frame:
-
-    ffmpeg -i out.mp4 -vf "select=eq(n\,0)" -vframes 1 -q:v 3 poster.jpg
-
-  Aim for under ~1 MB per clip and 4-8 seconds. A loop that's short and
-  seamless reads better than a long one that cuts abruptly.
-  ============================================================
--->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,7 +28,13 @@
 
   /* Tells the browser to render scrollbars, text fields etc. in dark mode
      instead of flashing white chrome at the edges of your dark page. */
-  html { color-scheme: dark; }
+  html {
+    color-scheme: dark;
+    /* Reserve the scrollbar track permanently. Without this, locking body
+       scroll while the sheet is open removes the scrollbar and the whole
+       page jumps sideways by ~15px. */
+    scrollbar-gutter: stable;
+  }
 
   *, *::before, *::after { box-sizing: border-box; }
 
@@ -82,6 +47,9 @@
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Set by the sheet script. Stops the page behind the sheet from scrolling. */
+  body.has-sheet { overflow: hidden; }
 
   .shell {
     max-width: var(--measure);
@@ -107,7 +75,13 @@
   right: clamp(20px, 5vw, 56px);
   z-index: 2;                     /* above the panel */
   pointer-events: auto;
+}
 
+/* Shared chrome for the two small buttons on the page. Grouping the
+   selectors is deliberate: if you restyle one you restyle both, so they
+   can't drift apart. */
+.drawer__tab,
+.sheet__close {
   appearance: none;
   font: inherit;
   color: var(--ink);
@@ -122,11 +96,14 @@
 }
 
 .drawer__tab:hover,
-.drawer__tab:focus-visible {
+.drawer__tab:focus-visible,
+.sheet__close:hover,
+.sheet__close:focus-visible {
   border-color: #6d7177;
   background: #34383c;
 }
-.drawer__tab:focus-visible {
+.drawer__tab:focus-visible,
+.sheet__close:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
@@ -358,6 +335,185 @@
     max-width: 44ch;
   }
 
+  /* ---------- the project sheet: slides up from the bottom ----------
+
+     Three nested pieces, each with one job:
+       .sheet         the fixed full-viewport container. Owns visibility.
+       .sheet__scrim  the dimmer over the 30% of page still showing.
+       .sheet__panel  the thing that actually moves.
+
+     Why visibility and not just the transform? A panel pushed off-screen
+     with translateY(100%) is still *in the document*: screen readers read
+     it, and Tab moves focus into it, sending the caret somewhere invisible.
+     visibility:hidden removes it from both. But visibility is not an
+     animatable property — it snaps. The trick below delays the snap until
+     after the slide-out has finished, using a transition *delay* on a
+     zero-duration transition. */
+
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 20;                 /* above the drawer, which is 10 */
+    visibility: hidden;
+    transition: visibility 0s linear 420ms;
+  }
+  .sheet.is-open {
+    visibility: visible;
+    transition-delay: 0s;        /* appear immediately on the way in */
+  }
+  /* During that 420ms delay the sheet is still visible-and-clickable even
+     though it's sliding away, so it would swallow a click aimed at the
+     page. Belt to the visibility braces. */
+  .sheet:not(.is-open) { pointer-events: none; }
+
+  .sheet__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 19, 21, 0.62);
+    opacity: 0;
+    transition: opacity 420ms ease;
+    cursor: pointer;             /* it is a click target: click to dismiss */
+  }
+  .sheet.is-open .sheet__scrim { opacity: 1; }
+
+  .sheet__panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 70vh;
+    height: 70dvh;               /* dvh accounts for mobile browser chrome */
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: clamp(22px, 3.4vw, 44px) clamp(20px, 5vw, 56px);
+
+    /* Parked fully below the fold. Transform (not `top` or `height`)
+       because transform is handled by the compositor: no layout, no
+       repaint, so it stays smooth even with six videos decoding. */
+    transform: translateY(100%);
+    transition: transform 420ms cubic-bezier(.2,.7,.3,1);
+    outline: none;               /* it takes focus programmatically */
+  }
+  .sheet.is-open .sheet__panel { transform: translateY(0); }
+
+  /* Centre the contents on the same measure as the rest of the page so the
+     sheet doesn't feel like it belongs to a different site. */
+  .sheet__inner {
+    width: 100%;
+    max-width: var(--measure);
+    margin: 0 auto;
+    flex: 1 1 auto;
+    min-height: 0;               /* lets the children scroll, see below */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(24px, 3.6vw, 56px);
+  }
+
+  /* A row of its own above the columns. Absolute-positioning the button
+     instead would mean hand-computing top padding for both columns so the
+     text and the clip each dodge it — one more thing to get wrong at every
+     breakpoint. */
+  .sheet__bar {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: var(--measure);
+    margin: 0 auto 14px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* --- left column: the words --- */
+
+  .sheet__text {
+    min-height: 0;               /* a grid item's default min-height is auto,
+                                    which means "as tall as my content" and
+                                    silently defeats overflow:auto */
+    overflow-y: auto;
+    padding-right: 14px;
+  }
+
+  .sheet__text h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    margin: 0 0 14px;
+    max-width: 24ch;
+  }
+
+  .sheet__body { color: var(--muted); max-width: 62ch; }
+  .sheet__body > :first-child { margin-top: 0; }
+  .sheet__body p { margin: 0 0 1em; }
+  .sheet__body strong { color: var(--ink); font-weight: 500; }
+  .sheet__body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+    color: var(--ink);
+  }
+
+  /* A quiet inline list for tools used. No boxes, no capitals. */
+  .sheet__body ul.tools {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0 0 1em;
+    padding: 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .sheet__cta {
+    display: inline-block;
+    margin-top: 6px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.95rem;
+    border: 1px solid #6d7177;
+    border-radius: 3px;
+    padding: 9px 18px;
+    transition: background 200ms ease, border-color 200ms ease;
+  }
+  .sheet__cta:hover,
+  .sheet__cta:focus-visible { background: #34383c; border-color: var(--ink); }
+  .sheet__cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  /* --- right column: the clip --- */
+
+  .sheet__media {
+    position: relative;
+    min-height: 0;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--line);
+  }
+
+  .sheet__media video {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 860px) {
+    /* Not enough width for two columns. Stack, clip on top, and let the
+       whole panel scroll as one column instead of the text alone. */
+    .sheet__inner {
+      grid-template-columns: minmax(0, 1fr);
+      grid-auto-rows: min-content;
+      overflow-y: auto;
+    }
+    .sheet__text { overflow: visible; padding-right: 0; }
+    .sheet__media { order: -1; aspect-ratio: 16 / 10; }
+  }
+
   /* ---------- footer ---------- */
 
   .contact {
@@ -376,6 +532,10 @@
   /* Readers who ask their OS to reduce motion get stills, not five loops. */
   @media (prefers-reduced-motion: reduce) {
     * { transition-duration: 0.01ms !important; }
+    /* transition-duration alone doesn't cancel a *delay*, and the sheet
+       uses one to hold visibility back. Without this the scrim hangs
+       around for 420ms after closing. */
+    .sheet { transition-delay: 0s !important; }
   }
 </style>
 </head>
@@ -403,8 +563,9 @@
     <p>this is Ahmed, as a kid I have played plenty of video games on a really old pc, if I am not mistaken it had a pentium 4 and 512mb of ddr2 ram with some ati graphics card with 32mb of vram, but that's beside the point. The point is it was a mericle that that thing could run anything made 
       after 2010 which is around the time I had used it, and certainly not something as complex as a videogame tldr; I loved graphics, I loved them because they pushed the hardware, 
       and I always wanted to know exactly how things are built from the grounds up (or atleast close enough to that) which is why I took two years to figure out whether I wanted to be an electrical engineer or a computer scientist. The electrical engineer starts from first principles
-    , where as the computer scientist abstracts more but can therefore do more complex things, I chose the easier way anyway.. too bad. Anyway graphics be it as beautiful as they are, are not the only thing that interested me. I love all that sits at the intersection between hardware and software, above all I love performance. Modern hardware is very strong
-      And my opinion is that engineering is about solving problems albeit in efficient ways. This is what I love to do, be it in graphics, Machine learning, or other areas. Here's a book that I love: Operating systems: Three easy pieces. Here's another completely unrelated book that I love: East of Eden. Here's an author I love: John Green. Here's a software I love: Blender, Here's something I love to do 3D art (checkout my artstation). Anyway that's enough of a ramble. Thanks for coming to my Ted Talk.
+    , where as the computer scientist abstracts more but can therefore do more complex things. Anyway graphics be it as beautiful as they are, are not the only thing that interested me. I love all that sits at the intersection between hardware and software, above all I love performance. Modern hardware is very strong
+      And my opinion is that engineering is about solving problems albeit in efficient ways. This is what I love to do, be it in graphics, Machine learning, or other areas. 
+      <!-- Here's a book that I love: Operating systems: Three easy pieces. Here's another completely unrelated book that I love: East of Eden. Here's an author I love: John Green. Here's a software I love: Blender, Here's something I love to do 3D art (checkout my artstation). Anyway that's enough of a ramble. Thanks for coming to my Ted Talk. -->
     </p>
   </header>
 
@@ -422,9 +583,17 @@
         </div>
         <div class="label">
           <h2>Renderboy</h2>
-          <p>ss.</p>
+          <p>A Real Time GPU Path Tracer.</p>
         </div>
       </a>
+
+      <!-- Long copy for the sheet. Replace all of it. -->
+      <template class="card__detail">
+        <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
+        <p>A Real Time GPU Path Tracer to simulate light transport in a physically-based manner.</p>
+        <!-- <p>Then the interesting part: what was hard, what you measured, and
+          what you changed because of what you measured.</p> --> 
+      </template>
     </li>
 
     <li class="card--lead">
@@ -439,9 +608,16 @@
         </div>
         <div class="label">
           <h2>Boids</h2>
-          <p>bsbs.</p>
+          <p>A real time simulation of flocking birds on a GPU.</p>
         </div>
       </a>
+
+      <template class="card__detail">
+        <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
+        <p>A real time simulation of flocking birds on a GPU.</p>
+        <!-- <p>Then the interesting part: what was hard, what you measured, and
+          what you changed because of what you measured.</p> --> 
+      </template>
     </li>
 
     <li class="card--rest">
@@ -456,9 +632,16 @@
         </div>
         <div class="label">
           <h2>Smoothed Particle Hydrodynamics</h2>
-          <p>dpsdps.</p>
+          <p>A real time simulation of fluids on the GPU.</p>
         </div>
       </a>
+
+      <template class="card__detail">
+        <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
+        <p>A real time simulation of fluids on the GPU based on the Navier-Stokes equations through smoothed particle Hydrodynamics.</p>
+        <!-- <p>Then the interesting part: what was hard, what you measured, and
+          what you changed because of what you measured.</p> --> 
+      </template>
     </li>
 
     <li class="card--rest">
@@ -473,9 +656,16 @@
         </div>
         <div class="label">
           <h2>Project Ngine</h2>
-          <p>fdps</p>
+          <p>A real time graphics & physics engine, a.k.a: a game engine.</p>
         </div>
       </a>
+
+      <template class="card__detail">
+        <ul class="tools"><li>C++</li><li>OpenGL</li></ul>
+        <p>A real time graphics & physics engine, a.k.a: a game engine.</p>
+        <!-- <p>Then the interesting part: what was hard, what you measured, and
+          what you changed because of what you measured.</p> --> 
+      </template>
     </li>
 
     <li class="card--rest">
@@ -490,9 +680,16 @@
         </div>
         <div class="label">
           <h2>Manifold</h2>
-          <p>dp.</p>
+          <p>A tiny CAD.</p>
         </div>
       </a>
+
+      <template class="card__detail">
+        <ul class="tools"><li>C++</li><li>OpenGL</li></ul>
+        <p>A tiny CAD.</p>
+      <!-- <p>Then the interesting part: what was hard, what you measured, and
+          what you changed because of what you measured.</p> --> 
+      </template>
     </li>
 
   </ul>
@@ -507,7 +704,7 @@
     height="2000"
     loading="lazy"
     decoding="async">
-  <figcaption>POV.</figcaption>
+  <figcaption>pov</figcaption>
 </figure>
 
 
@@ -519,6 +716,39 @@
   </footer>
 
 </div>
+
+
+<!-- ---------- the project sheet ----------
+     One sheet, reused by all five cards. The alternative — five sheets,
+     one per project — would mean five more <video> elements in the
+     document, all of them fetching metadata at load. One element whose
+     src we swap costs one decoder. -->
+
+<div class="sheet" id="project-sheet" role="dialog" aria-modal="true"
+     aria-labelledby="sheet-title" aria-hidden="true">
+
+  <div class="sheet__scrim" data-sheet-close></div>
+
+  <div class="sheet__panel" tabindex="-1">
+    <div class="sheet__bar">
+      <button class="sheet__close" type="button" data-sheet-close>Close</button>
+    </div>
+
+    <div class="sheet__inner">
+      <div class="sheet__text">
+        <h2 id="sheet-title"></h2>
+        <div class="sheet__body"></div>
+        <a class="sheet__cta" href="#">Open the project</a>
+      </div>
+
+      <div class="sheet__media">
+        <video class="sheet__video" muted loop playsinline preload="metadata"
+               aria-hidden="true" tabindex="-1"></video>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 (function () {
@@ -560,6 +790,146 @@
   } else {
     videos.forEach(attempt);   // very old browser: just let them all run
   }
+})();
+</script>
+
+
+<script>
+/* ---------- project sheet ----------
+
+   Everything the sheet shows already exists in the card markup, so the
+   card stays the single source of truth: title from the <h2>, clip and
+   poster from the card's own <video>, destination from the link's href,
+   long copy from the sibling <template>. Nothing is duplicated in JS, so
+   nothing can fall out of sync when you edit a card.                     */
+
+(function () {
+  var sheet = document.getElementById('project-sheet');
+  var grid  = document.querySelector('.work');
+  if (!sheet || !grid) return;
+
+  var panel  = sheet.querySelector('.sheet__panel');
+  var titleH = sheet.querySelector('#sheet-title');
+  var bodyEl = sheet.querySelector('.sheet__body');
+  var cta    = sheet.querySelector('.sheet__cta');
+  var video  = sheet.querySelector('.sheet__video');
+
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var returnFocusTo = null;
+
+  // Regions to switch off while the sheet is up. The `inert` attribute
+  // makes a subtree unfocusable, unclickable and invisible to screen
+  // readers in one line — a focus trap you don't have to write.
+  var background = Array.prototype.slice.call(
+    document.querySelectorAll('.shell, .drawer')
+  );
+
+  function playSafely(v) {
+    var p = v.play();
+    if (p && typeof p.catch === 'function') p.catch(function () {});
+  }
+
+  function gridVideos() {
+    return Array.prototype.slice.call(document.querySelectorAll('.frame video'));
+  }
+
+  function isOnScreen(el) {
+    var r = el.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight;
+  }
+
+  function open(card) {
+    var li  = card.closest('li');
+    var tpl = li && li.querySelector('template.card__detail');
+    var cardVideo = card.querySelector('.frame video');
+
+    titleH.textContent = card.querySelector('.label h2').textContent;
+
+    // template.content is a DocumentFragment. Clone it — using it directly
+    // would move the nodes out of the template, so the second time you
+    // opened this project the sheet would be empty.
+    bodyEl.replaceChildren(tpl ? tpl.content.cloneNode(true) : '');
+
+    cta.href = card.getAttribute('href');
+    cta.textContent = 'Open ' + titleH.textContent;
+
+    if (cardVideo) {
+      var clip   = cardVideo.getAttribute('src');
+      var poster = cardVideo.getAttribute('poster');
+      // Only reload when the project actually changed. Re-setting the same
+      // src throws away a decoded, cached stream for nothing.
+      if (video.getAttribute('src') !== clip) {
+        video.setAttribute('src', clip);
+        if (poster) video.setAttribute('poster', poster);
+        video.load();
+      } else if (video.readyState > 0) {
+        video.currentTime = 0;   // guarded: setting this at readyState 0 can throw
+      }
+      video.muted = true;        // muted is the price of autoplay
+    }
+
+    returnFocusTo = document.activeElement;
+
+    sheet.classList.add('is-open');
+    sheet.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('has-sheet');
+    background.forEach(function (el) { el.inert = true; });
+
+    // The grid clips are hidden behind the panel but IntersectionObserver
+    // has no concept of occlusion: as far as it knows they're still in the
+    // viewport, so they keep decoding. Stop them by hand.
+    gridVideos().forEach(function (v) { v.pause(); });
+
+    if (!calm.matches && video.getAttribute('src')) playSafely(video);
+
+    panel.focus();               // tabindex="-1" makes this possible
+  }
+
+  function close() {
+    if (!sheet.classList.contains('is-open')) return;
+
+    sheet.classList.remove('is-open');
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('has-sheet');
+    background.forEach(function (el) { el.inert = false; });
+
+    video.pause();
+
+    // Resume only what the reader can actually see. The observer won't do
+    // it for us — no intersection *changed*, so it never fires.
+    if (!calm.matches) {
+      gridVideos().forEach(function (v) { if (isOnScreen(v)) playSafely(v); });
+    }
+
+    if (returnFocusTo && typeof returnFocusTo.focus === 'function') {
+      returnFocusTo.focus();
+      returnFocusTo = null;
+    }
+  }
+
+  // One listener for all five cards: the click bubbles up to the grid and
+  // we ask where it came from. Add a sixth card and nothing here changes.
+  grid.addEventListener('click', function (e) {
+    var card = e.target.closest('a.card');
+    if (!card || !grid.contains(card)) return;
+
+    // Leave the browser's own link behaviour alone for anything that isn't
+    // a plain left click: ctrl/cmd-click, shift-click and middle-click all
+    // mean "open elsewhere", and hijacking them is the rudest thing a site
+    // can do to someone who wanted a new tab.
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    e.preventDefault();          // the href stays in the markup; we just
+    open(card);                  // choose not to follow it right now
+  });
+
+  sheet.addEventListener('click', function (e) {
+    if (e.target.closest('[data-sheet-close]')) close();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') close();
+  });
 })();
 </script>
 
