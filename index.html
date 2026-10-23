@@ -14,7 +14,7 @@
   :root {
     /* Grey ladder: page sits darkest, frames lift slightly off it,
        hairlines lift again. Never #000 — see the halation note. */
-    --bg:       #26282b;
+    --bg:       #0d1721;
     --surface:  #2f3236;
     --line:     #41454a;
 
@@ -24,6 +24,7 @@
 
     --measure:  1240px;
     --gap:      clamp(20px, 2.6vw, 40px);
+
   }
 
   /* Tells the browser to render scrollbars, text fields etc. in dark mode
@@ -52,9 +53,40 @@
   body.has-sheet { overflow: hidden; }
 
   .shell {
+    /* position + z-index lift the content above the fixed triangle layer.
+       Without them, the browser paints positioned elements (the layer) on
+       top of ordinary in-flow content (this), and the triangles would sit
+       over your text. */
+    position: relative;
+    z-index: 1;
     max-width: var(--measure);
     margin: 0 auto;
     padding: clamp(28px, 6vw, 72px) clamp(20px, 5vw, 56px) clamp(48px, 8vw, 96px);
+  }
+
+
+  /* ---------- background: free-floating wireframe triangles ----------
+
+     The triangles now move and rotate one by one, so a single static
+     pattern can't describe them any more. They're drawn on a <canvas>: a
+     plain pixel surface that the script below clears and redraws every
+     frame. This box only places it: fixed behind everything, full window,
+     never catching clicks. */
+
+  .bg-field {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;          /* never steals a click from the page */
+    display: none;                 /* only shown on devices with a real mouse */
+  }
+
+  /* "hover: hover" and "pointer: fine" = a real mouse or trackpad. Phones
+     and tablets have no resting cursor, so they don't get the effect. */
+  @media (hover: hover) and (pointer: fine) {
+    .bg-field { display: block; }
   }
 
 
@@ -206,6 +238,27 @@
     font-size: 0.975rem;
     flex: 1 1 32ch;            /* grow to fill, wrap around ~32ch min */
     max-width: none;
+  }
+
+  /* ---------- sections ----------
+     Each group of projects gets a small heading. The space between
+     sections uses the same clamp() as the gap above the photo and the
+     footer, so the whole page keeps one vertical rhythm.
+     `.section + .section` means "a section that comes right after another
+     section", so the first one gets no extra top margin. */
+
+  .section + .section {
+    margin-top: clamp(48px, 8vw, 96px);
+  }
+
+  .section__title {
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0 0 clamp(18px, 2.6vw, 28px);
   }
 
   /* ---------- the grid ----------
@@ -542,6 +595,11 @@
 <body>
 
 
+<!-- The triangle background. Decorative: aria-hidden keeps screen
+     readers from announcing it. -->
+<canvas class="bg-field" aria-hidden="true"></canvas>
+
+
  <nav class="drawer" aria-label="Secondary">
   <button class="drawer__tab" type="button" aria-expanded="false" aria-controls="drawer-panel">
     Menu
@@ -569,130 +627,167 @@
     </p>
   </header>
 
-  <ul class="work">
+  <!-- ---------- section 1: graphics & simulation ---------- -->
 
-    <li class="card--lead">
-      <a class="card" href="https://ahmed5720.github.io/RenderBoy/">
-        <div class="frame">
-          <video
-            src="media/renderboy.mp4"
-            poster="media/posters/project-one.jpg"
-            autoplay muted loop playsinline
-            preload="metadata"
-            aria-hidden="true" tabindex="-1"></video>
-        </div>
-        <div class="label">
-          <h2>Renderboy</h2>
-          <p>A Real Time GPU Path Tracer.</p>
-        </div>
-      </a>
+  <section class="section" aria-labelledby="section-graphics">
+    <h2 class="section__title" id="section-graphics">Graphics &amp; Simulation</h2>
 
-      <!-- Long copy for the sheet. Replace all of it. -->
-      <template class="card__detail">
-        <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
-        <p>A Real Time GPU Path Tracer to simulate light transport in a physically-based manner.</p>
-        <!-- <p>Then the interesting part: what was hard, what you measured, and
-          what you changed because of what you measured.</p> --> 
-      </template>
-    </li>
+    <ul class="work">
 
-    <li class="card--lead">
-      <a class="card" href="https://github.com/Ahmed5720/CuBoids">
-        <div class="frame">
-          <video
-            src="media/boids.mp4"
-            poster="media/posters/project-two.jpg"
-            autoplay muted loop playsinline
-            preload="metadata"
-            aria-hidden="true" tabindex="-1"></video>
-        </div>
-        <div class="label">
-          <h2>Boids</h2>
+      <li class="card--lead">
+        <a class="card" href="https://ahmed5720.github.io/RenderBoy/">
+          <div class="frame">
+            <video
+              src="media/renderboy.mp4"
+              poster="media/posters/project-one.jpg"
+              autoplay muted loop playsinline
+              preload="metadata"
+              aria-hidden="true" tabindex="-1"></video>
+          </div>
+          <div class="label">
+            <h2>Renderboy</h2>
+            <p>A Real Time GPU Path Tracer.</p>
+          </div>
+        </a>
+
+        <!-- Long copy for the sheet. Replace all of it. -->
+        <template class="card__detail">
+          <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
+          <p>A Real Time GPU Path Tracer to simulate light transport in a physically-based manner.</p>
+          <!-- <p>Then the interesting part: what was hard, what you measured, and
+            what you changed because of what you measured.</p> --> 
+        </template>
+      </li>
+
+      <li class="card--lead">
+        <a class="card" href="https://github.com/Ahmed5720/CuBoids">
+          <div class="frame">
+            <video
+              src="media/boids.mp4"
+              poster="media/posters/project-two.jpg"
+              autoplay muted loop playsinline
+              preload="metadata"
+              aria-hidden="true" tabindex="-1"></video>
+          </div>
+          <div class="label">
+            <h2>Boids</h2>
+            <p>A real time simulation of flocking birds on a GPU.</p>
+          </div>
+        </a>
+
+        <template class="card__detail">
+          <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
           <p>A real time simulation of flocking birds on a GPU.</p>
-        </div>
-      </a>
+          <!-- <p>Then the interesting part: what was hard, what you measured, and
+            what you changed because of what you measured.</p> --> 
+        </template>
+      </li>
 
-      <template class="card__detail">
-        <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
-        <p>A real time simulation of flocking birds on a GPU.</p>
-        <!-- <p>Then the interesting part: what was hard, what you measured, and
-          what you changed because of what you measured.</p> --> 
-      </template>
-    </li>
+      <li class="card--rest">
+        <a class="card" href="https://github.com/Ahmed5720/CuBoids">
+          <div class="frame">
+            <video
+              src="media/sph.mp4"
+              poster="media/posters/project-three.jpg"
+              autoplay muted loop playsinline
+              preload="metadata"
+              aria-hidden="true" tabindex="-1"></video>
+          </div>
+          <div class="label">
+            <h2>Smoothed Particle Hydrodynamics</h2>
+            <p>A real time simulation of fluids on the GPU.</p>
+          </div>
+        </a>
 
-    <li class="card--rest">
-      <a class="card" href="https://github.com/Ahmed5720/CuBoids">
-        <div class="frame">
-          <video
-            src="media/sph.mp4"
-            poster="media/posters/project-three.jpg"
-            autoplay muted loop playsinline
-            preload="metadata"
-            aria-hidden="true" tabindex="-1"></video>
-        </div>
-        <div class="label">
-          <h2>Smoothed Particle Hydrodynamics</h2>
-          <p>A real time simulation of fluids on the GPU.</p>
-        </div>
-      </a>
+        <template class="card__detail">
+          <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
+          <p>A real time simulation of fluids on the GPU based on the Navier-Stokes equations through smoothed particle Hydrodynamics.</p>
+          <!-- <p>Then the interesting part: what was hard, what you measured, and
+            what you changed because of what you measured.</p> --> 
+        </template>
+      </li>
 
-      <template class="card__detail">
-        <ul class="tools"><li>C++</li><li>CUDA</li><li>OpenGL</li></ul>
-        <p>A real time simulation of fluids on the GPU based on the Navier-Stokes equations through smoothed particle Hydrodynamics.</p>
-        <!-- <p>Then the interesting part: what was hard, what you measured, and
-          what you changed because of what you measured.</p> --> 
-      </template>
-    </li>
+      <li class="card--rest">
+        <a class="card" href="https://github.com/Ahmed5720/PROJECT_NGINE">
+          <div class="frame">
+            <video
+              src="media/ngine2x.mp4"
+              poster="media/posters/project-four.jpg"
+              autoplay muted loop playsinline
+              preload="metadata"
+              aria-hidden="true" tabindex="-1"></video>
+          </div>
+          <div class="label">
+            <h2>Project Ngine</h2>
+            <p>A real time graphics & physics engine, a.k.a: a game engine.</p>
+          </div>
+        </a>
 
-    <li class="card--rest">
-      <a class="card" href="https://github.com/Ahmed5720/PROJECT_NGINE">
-        <div class="frame">
-          <video
-            src="media/ngine2x.mp4"
-            poster="media/posters/project-four.jpg"
-            autoplay muted loop playsinline
-            preload="metadata"
-            aria-hidden="true" tabindex="-1"></video>
-        </div>
-        <div class="label">
-          <h2>Project Ngine</h2>
+        <template class="card__detail">
+          <ul class="tools"><li>C++</li><li>OpenGL</li></ul>
           <p>A real time graphics & physics engine, a.k.a: a game engine.</p>
-        </div>
-      </a>
+          <!-- <p>Then the interesting part: what was hard, what you measured, and
+            what you changed because of what you measured.</p> --> 
+        </template>
+      </li>
 
-      <template class="card__detail">
-        <ul class="tools"><li>C++</li><li>OpenGL</li></ul>
-        <p>A real time graphics & physics engine, a.k.a: a game engine.</p>
-        <!-- <p>Then the interesting part: what was hard, what you measured, and
-          what you changed because of what you measured.</p> --> 
-      </template>
-    </li>
+      <li class="card--rest">
+        <a class="card" href="https://github.com/Ahmed5720/Manifold">
+          <div class="frame">
+            <video
+              src="media/manifold4x.mp4"
+              poster="media/posters/project-five.jpg"
+              autoplay muted loop playsinline
+              preload="metadata"
+              aria-hidden="true" tabindex="-1"></video>
+          </div>
+          <div class="label">
+            <h2>Manifold</h2>
+            <p>A tiny CAD.</p>
+          </div>
+        </a>
 
-    <li class="card--rest">
-      <a class="card" href="https://github.com/Ahmed5720/Manifold">
-        <div class="frame">
-          <video
-            src="media/manifold4x.mp4"
-            poster="media/posters/project-five.jpg"
-            autoplay muted loop playsinline
-            preload="metadata"
-            aria-hidden="true" tabindex="-1"></video>
-        </div>
-        <div class="label">
-          <h2>Manifold</h2>
+        <template class="card__detail">
+          <ul class="tools"><li>C++</li><li>OpenGL</li></ul>
           <p>A tiny CAD.</p>
-        </div>
-      </a>
+        <!-- <p>Then the interesting part: what was hard, what you measured, and
+            what you changed because of what you measured.</p> --> 
+        </template>
+      </li>
 
-      <template class="card__detail">
-        <ul class="tools"><li>C++</li><li>OpenGL</li></ul>
-        <p>A tiny CAD.</p>
-      <!-- <p>Then the interesting part: what was hard, what you measured, and
-          what you changed because of what you measured.</p> --> 
-      </template>
-    </li>
+    </ul>
+  </section>
 
-  </ul>
+  <!-- ---------- section 2: hardware ---------- -->
+
+  <section class="section" aria-labelledby="section-hardware">
+    <h2 class="section__title" id="section-hardware">Hardware</h2>
+
+    <ul class="work">
+
+      <li class="card--lead">
+        <a class="card" href="https://ahmed5720.github.io/World-s-worst-display-driver/">
+          <div class="frame">
+            <video
+              src="media/pong.mp4"
+              poster="media/posters/project-six.jpg"
+              autoplay muted loop playsinline
+              preload="metadata"
+              aria-hidden="true" tabindex="-1"></video>
+          </div>
+          <div class="label">
+            <h2>I2C display driver on the Jetson</h2>
+          </div>
+        </a>
+
+        <template class="card__detail">
+          <ul class="tools"><li>C</li><li>Linux</li><li>Pioled ssd1306</li><li>Jetson Orin Nano</li></ul>
+          <p>In this project we are interested in gaining control over a small display connected to our jetson nano by writing a linux driver for it, the display has the SSD 1306 controller chip, and communicates over I2C. In general, its the operating system’s job to communicate to hardware and provide the end user with a high level api to it, this is provided through the concept of driver modules. Such modules can be added or removed from the kernel during runtime without having to restart or rebuild the kernel. They are “plug and play” in a sense. We first start by creating a standard program to do this job for us using the provided I2C device file and then we work out the changes needed to turn it into a device driver. Our reference here is the actual driver linux uses at <code>drivers/video/fbdev/ssd1307fb.c</code></p>
+        </template>
+      </li>
+
+    </ul>
+  </section>
 
   
 
@@ -719,10 +814,10 @@
 
 
 <!-- ---------- the project sheet ----------
-     One sheet, reused by all five cards. The alternative — five sheets,
-     one per project — would mean five more <video> elements in the
-     document, all of them fetching metadata at load. One element whose
-     src we swap costs one decoder. -->
+     One sheet, reused by every card. The alternative — one sheet per
+     project — would mean more <video> elements in the document, all of
+     them fetching metadata at load. One element whose src we swap costs
+     one decoder. -->
 
 <div class="sheet" id="project-sheet" role="dialog" aria-modal="true"
      aria-labelledby="sheet-title" aria-hidden="true">
@@ -795,6 +890,233 @@
 
 
 <script>
+/* ---------- triangle background ----------
+
+   Every triangle is a small object: position, velocity, angle, spin, size.
+   Each frame we
+     1. move the glow a little toward the mouse        (lerp, as before)
+     2. move and rotate every triangle                 (simple physics)
+     3. clear the canvas and draw only the triangles near the glow, each
+        with an opacity that depends on its distance   (approach A)
+
+   Triangles far from the cursor are still moved (that's a few additions
+   each, very cheap) but never drawn, so drawing cost depends on how many
+   are inside the glow, not on how many exist.                            */
+
+(function () {
+  var canvas = document.querySelector('.bg-field');
+  if (!canvas || !canvas.getContext) return;
+
+  var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  if (!finePointer.matches) return;
+
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var ctx  = canvas.getContext('2d');
+
+  /* ---- knobs ---- */
+  var GLOW_R     = 260;      // px: radius in which triangles are visible
+  var EASE       = 0.64;     // 0..1: how quickly the glow chases the mouse
+  var DENSITY    = 2000;     // px² of screen per triangle (lower = more)
+  var MIN_SIZE   = 10;       // px: smallest triangle (centre to corner)
+  var MAX_SIZE   = 34;       // px: largest
+  var DRIFT      = 0.50;     // px per frame: typical wandering speed
+  var PUSH_R     = 300;      // px: how close the cursor must be to push
+  var PUSH       = 0.09;     // strength of that push
+  var COLOR      = 'rgb(126, 200, 150)';
+  var MAX_ALPHA  = 0.95;     // opacity of a triangle right under the cursor
+
+  var width = 0, height = 0;
+  var tris = [];
+
+  var mouseX = 0, mouseY = 0;
+  var glowX  = 0, glowY  = 0;
+  var hasPosition = false;
+  var lit = true;           // is the mouse in the window?
+  var presence = 0;          // 0..1: fades the whole field in and out
+  var running = false;
+  var last = 0;
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function makeTriangle() {
+    // A random direction, a random speed around DRIFT.
+    var dir = rand(0, Math.PI * 2);
+    var speed = rand(0.4, 1) * DRIFT;
+    var t = {
+      x: rand(0, width),
+      y: rand(0, height),
+      size: rand(MIN_SIZE, MAX_SIZE),
+      angle: rand(0, Math.PI * 2),
+      // "base" values are what each triangle relaxes back to after the
+      // cursor has pushed it around.
+      bvx: Math.cos(dir) * speed,
+      bvy: Math.sin(dir) * speed,
+      bspin: rand(-0.008, 0.008)
+    };
+    t.vx = t.bvx; t.vy = t.bvy; t.spin = t.bspin;
+    return t;
+  }
+
+  /* ---- sizing ----
+     A canvas has two sizes: how big it looks (CSS pixels) and how many
+     pixels it actually stores. On a high-density screen (devicePixelRatio
+     2 or 3) those differ, and drawing at the CSS size would look blurry.
+     So we store dpr times more pixels, then scale the drawing context so
+     we can keep thinking in CSS pixels.                                  */
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width  = canvas.clientWidth;
+    height = canvas.clientHeight;
+    canvas.width  = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Keep the number of triangles proportional to the screen's area.
+    var want = Math.max(60, Math.min(400, Math.round(width * height / DENSITY)));
+    while (tris.length < want) tris.push(makeTriangle());
+    tris.length = want;
+
+    if (!running) render();   // redraw once even if the loop is idle
+  }
+
+  /* ---- one physics step ----
+     dt is "how many 60fps frames' worth of time passed", so motion runs at
+     the same real-world speed on a 60Hz or a 144Hz monitor.              */
+  function update(dt) {
+    var pad = MAX_SIZE;       // let triangles fully leave before wrapping
+    for (var i = 0; i < tris.length; i++) {
+      var t = tris[i];
+
+      // Push away from the glow, harder the closer the triangle is.
+      var dx = t.x - glowX, dy = t.y - glowY;
+      var d2 = dx * dx + dy * dy;
+      if (presence > 0 && d2 < PUSH_R * PUSH_R && d2 > 0.01) {
+        var d = Math.sqrt(d2);
+        var f = (1 - d / PUSH_R) * PUSH * presence;
+        t.vx += (dx / d) * f * dt;          // dx/d, dy/d = unit vector
+        t.vy += (dy / d) * f * dt;          // pointing away from the glow
+        t.spin += f * 0.02 * (t.bspin >= 0 ? 1 : -1) * dt;
+      }
+
+      // Relax back toward the triangle's own drift and spin.
+      t.vx += (t.bvx - t.vx) * 0.02 * dt;
+      t.vy += (t.bvy - t.vy) * 0.02 * dt;
+      t.spin += (t.bspin - t.spin) * 0.03 * dt;
+
+      t.x += t.vx * dt;
+      t.y += t.vy * dt;
+      t.angle += t.spin * dt;
+
+      // Wrap around the edges, like the screen in Asteroids.
+      if (t.x < -pad) t.x += width + pad * 2;
+      else if (t.x > width + pad) t.x -= width + pad * 2;
+      if (t.y < -pad) t.y += height + pad * 2;
+      else if (t.y > height + pad) t.y -= height + pad * 2;
+    }
+  }
+
+  /* ---- drawing ---- */
+  function render() {
+    ctx.clearRect(0, 0, width, height);
+    if (presence < 0.002) return;
+
+    ctx.strokeStyle = COLOR;
+    ctx.lineWidth = 1;
+    ctx.lineJoin = 'round';
+
+    var reach = GLOW_R + MAX_SIZE;   // anything further can't be visible
+    var TAU3 = Math.PI * 2 / 3;      // 120°: the angle between corners
+
+    for (var i = 0; i < tris.length; i++) {
+      var t = tris[i];
+      var dx = t.x - glowX, dy = t.y - glowY;
+
+      // Cheap rejection first: compare squared distances, no sqrt needed.
+      if (dx * dx + dy * dy > reach * reach) continue;
+
+      var d = Math.sqrt(dx * dx + dy * dy);
+      var a = 1 - d / GLOW_R;
+      if (a <= 0) continue;
+      a = a * a * (3 - 2 * a);       // smoothstep: soft at both ends
+
+      ctx.globalAlpha = a * MAX_ALPHA * presence;
+
+      // An equilateral triangle = three points on a circle, 120° apart.
+      // Rotating it is just adding t.angle to all three.
+      ctx.beginPath();
+      for (var k = 0; k < 3; k++) {
+        var ang = t.angle + k * TAU3;
+        var px = t.x + Math.cos(ang) * t.size;
+        var py = t.y + Math.sin(ang) * t.size;
+        if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---- the loop ---- */
+  function frame(now) {
+    var dt = Math.min((now - last) / (1000 / 60), 3);  // cap after a pause
+    last = now;
+
+    // The sheet covers the page: treat that like the mouse leaving.
+    var target = (lit && !document.body.classList.contains('has-sheet')) ? 1 : 0;
+
+    if (calm.matches) {
+      presence = target;
+      glowX = mouseX; glowY = mouseY;     // no trailing
+      render();                           // and no drifting or spinning
+      running = false;                    // redraw only on mouse moves
+      return;
+    }
+
+    presence += (target - presence) * 0.08 * dt;
+    glowX += (mouseX - glowX) * EASE * dt;
+    glowY += (mouseY - glowY) * EASE * dt;
+
+    update(dt);
+    render();
+
+    // Fully faded out: stop the loop. An idle page runs no code at all.
+    if (target === 0 && presence < 0.002) {
+      presence = 0;
+      ctx.clearRect(0, 0, width, height);
+      running = false;
+      return;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function start() {
+    if (running) return;      // never run two loops at once
+    running = true;
+    last = performance.now();
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('pointermove', function (e) {
+    if (e.pointerType !== 'mouse') return;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!hasPosition) { glowX = mouseX; glowY = mouseY; hasPosition = true; }
+    lit = true;
+    start();
+  }, { passive: true });
+
+  document.documentElement.addEventListener('mouseleave', function () {
+    lit = false;
+    start();                  // let the loop run long enough to fade out
+  });
+
+  window.addEventListener('resize', resize);
+  resize();
+})();
+</script>
+
+
+<script>
 /* ---------- project sheet ----------
 
    Everything the sheet shows already exists in the card markup, so the
@@ -805,8 +1127,11 @@
 
 (function () {
   var sheet = document.getElementById('project-sheet');
-  var grid  = document.querySelector('.work');
-  if (!sheet || !grid) return;
+
+  // querySelectorAll, not querySelector: the page now has one .work grid
+  // per section, and querySelector would only ever return the first.
+  var grids = Array.prototype.slice.call(document.querySelectorAll('.work'));
+  if (!sheet || !grids.length) return;
 
   var panel  = sheet.querySelector('.sheet__panel');
   var titleH = sheet.querySelector('#sheet-title');
@@ -907,9 +1232,13 @@
     }
   }
 
-  // One listener for all five cards: the click bubbles up to the grid and
-  // we ask where it came from. Add a sixth card and nothing here changes.
-  grid.addEventListener('click', function (e) {
+  // One handler, attached to every grid. The click bubbles up from the
+  // card to its grid and we ask where it came from. Add a card or a whole
+  // new section and nothing here changes.
+  //   e.target        = the exact thing the mouse hit (video, title, ...)
+  //   e.currentTarget = the grid this listener is attached to
+  function onGridClick(e) {
+    var grid = e.currentTarget;
     var card = e.target.closest('a.card');
     if (!card || !grid.contains(card)) return;
 
@@ -921,6 +1250,10 @@
 
     e.preventDefault();          // the href stays in the markup; we just
     open(card);                  // choose not to follow it right now
+  }
+
+  grids.forEach(function (grid) {
+    grid.addEventListener('click', onGridClick);
   });
 
   sheet.addEventListener('click', function (e) {
